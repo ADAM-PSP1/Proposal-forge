@@ -3,10 +3,16 @@
   publish = "dist"
   functions = "netlify/functions"
 
-[build.environment]
-  NODE_VERSION = "20"
+[functions]
+  node_bundler = "esbuild"
 
-# Route /api/claude to the Netlify Function
+[[functions]]
+  path = "/api/claude"
+  included_files = []
+
+[functions."claude"]
+  timeout = 60
+
 [[redirects]]
   from = "/api/claude"
   to = "/.netlify/functions/claude"
