@@ -291,16 +291,32 @@ export default function ProposalForge() {
   async function runResearch() {
     setError(null);
     setStep("researching");
-    setProgress("Researching company and contacts via web search…");
+    setProgress("Searching the web for company info…");
     try {
-      const data = await callClaude({
-        system: RESEARCH_SYSTEM,
+      // Step 1: web search only — gather raw results, no synthesis
+      const searchData = await callClaude({
+        system: "You are a research assistant. Use the web_search tool to find information about the company and contacts provided. Search for: the company's website and about page, their industry and size, any recent news, and the LinkedIn profiles or public profiles of the contacts mentioned. Return ALL search results as raw compiled text — do not summarise or analyse yet. Just gather everything you find.",
         messages: [{ role: "user", content: buildResearchPrompt(inputs) }],
         tools: [{ type: "web_search_20250305", name: "web_search" }],
         max_tokens: 4000,
       });
-      const text = getTextBlocks(data);
+
+      const rawResearch = getTextBlocks(searchData) + "\n" + getMcpResults(searchData);
+
       setProgress("Synthesising brief…");
+
+      // Step 2: synthesise only — no web search, just analyse and produce JSON
+      const synthData = await callClaude({
+        system: RESEARCH_SYSTEM,
+        messages: [{
+          role: "user",
+          content: `Here are the raw web search results for this account:\n\n${rawResearch}\n\nAnd here are the original inputs:\n\n${buildResearchPrompt(inputs)}\n\nNow synthesise this into the required JSON output.`,
+        }],
+        tools: [],
+        max_tokens: 4000,
+      });
+
+      const text = getTextBlocks(synthData);
       const parsed = parseJson(text);
       setResearch(parsed.research);
       setTemplateContent(parsed.templateContent);
