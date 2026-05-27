@@ -53,7 +53,7 @@ const SHADOW_LG = "0 12px 24px rgba(11, 16, 18, 0.10), 0 24px 48px rgba(11, 16, 
 
 async function callClaude({ system, messages, tools = [], mcp_servers = [], max_tokens = 4000 }) {
   const body = {
-    model: "claude-sonnet-4-20250514",
+    model: "claude-sonnet-4-6",
     max_tokens,
     system,
     messages,
